@@ -1,8 +1,9 @@
+use core::panic;
 // Uncomment this block to pass the first stage
 use std::{
-    io::{BufRead, Read, Write},
+    io::{Read, Write},
     net::{TcpListener, TcpStream},
-    path, str,
+    str,
 };
 
 fn main() {
@@ -28,14 +29,20 @@ fn main() {
 
 fn send_response(mut stream: TcpStream) {
     println!("Parsing request");
-    let mut buffer: Vec<u8> = Vec::new();
+    // let mut buffer: Vec<u8> = Vec::new();
+    let mut buffer = vec![];
+
     // TODO if incomming connection does not close the stream, could hang forever
     // TODO remove expect in code
     stream
-        .read_to_end(&mut buffer)
+        .read(&mut buffer)
         .expect("Could not read request from stream");
     let request = str::from_utf8(&buffer).expect("Could not parse request in utf8");
+    println!("request = {}", request);
+    panic!("panicked");
     let mut iterator = request.split("\r\n");
+
+    println!("{}", iterator.next().expect("test"));
 
     let path_requested = iterator
         .next()
