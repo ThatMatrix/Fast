@@ -41,6 +41,10 @@ fn send_response(mut stream: TcpStream) {
         .nth(1)
         .expect("Status line must contain a path");
 
+    // TODO check if path requested contains echo
+    // TODO if contains echo then get the rest of the path
+    // TODO send back the rest of the path inside the body with Content-type header
+
     println!("Sending response to stream for {}", path_requested);
     let status_line = if path_requested.len() <= 1 {
         String::from("HTTP/1.1 200 OK\r\n\r\n")
