@@ -5,6 +5,8 @@ use std::{
     str, thread,
 };
 
+use nom::combinator::iterator;
+
 fn main() {
     let root_path = get_root_path();
 
@@ -49,12 +51,14 @@ fn send_response(mut stream: TcpStream, mut root_path: String) {
     let mut iterator = request.split("\r\n");
 
     // TODO remove expect
-    let path_requested = iterator
+    let mut status_line = iterator
         .next()
         .expect("Request must have a status line")
-        .split(" ")
-        .nth(1)
-        .expect("Status line must contain a path");
+        .split(" ");
+    let method = status_line
+        .next()
+        .expect("Status line must contain a method");
+    let path_requested = status_line.next().expect("Status line must contain a path");
 
     // TODO check if path requested contains echo
     let response = if path_requested.len() <= 1 {
@@ -76,14 +80,33 @@ fn send_response(mut stream: TcpStream, mut root_path: String) {
     } else if path_requested.starts_with("/files/") {
         let path = path_requested.trim_start_matches("/files/");
         root_path = root_path + path;
-        match read_file(root_path) {
-            Ok(body) => {
-                let body_length = body.len();
-                String::from(format!(
+
+        if method == "GET" {
+            match read_file(root_path) {
+                Ok(body) => {
+                    let body_length = body.len();
+                    String::from(format!(
                     "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:{body_length}\r\n\r\n{body}"
                 ))
+                }
+                Err(_) => String::from("HTTP/1.1 404 Not Found\r\n\r\n"),
             }
-            Err(_) => String::from("HTTP/1.1 404 Not Found\r\n\r\n"),
+        }
+        // Method is POST
+        else {
+            while iterator.next().is_some_and(|str| str.len() > 0) {
+                continue;
+            }
+            let body_request = iterator
+                .next()
+                .unwrap()
+                .trim_end_matches(|c| c == '\0')
+                .as_ref();
+
+            let mut file = File::create(root_path).expect("Could not create file");
+            file.write_all(body_request)
+                .expect("Could not write to file");
+            String::from("HTTP/1.1 201 Created\r\n\r\n")
         }
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n")
