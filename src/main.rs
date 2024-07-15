@@ -1,7 +1,7 @@
 use std::{
+    fs::File,
     io::{Read, Write},
     net::{TcpListener, TcpStream},
-    process::exit,
     str, thread,
 };
 
@@ -13,8 +13,11 @@ fn main() {
     for stream in listener.incoming() {
         match stream {
             Ok(_stream) => {
+                // we have to clone here because we are inside a thread and modifying root_path might
+                // include modifying it for concurrent threads
+                let _root_path = root_path.clone();
                 println!("accepted new connection");
-                thread::spawn(|| send_response(_stream));
+                thread::spawn(|| send_response(_stream, _root_path));
             }
             Err(e) => {
                 println!("error: {}", e);
@@ -33,7 +36,7 @@ fn get_root_path() -> String {
     root_path
 }
 
-fn send_response(mut stream: TcpStream) {
+fn send_response(mut stream: TcpStream, mut root_path: String) {
     println!("Parsing request");
     let mut buffer = [0; 2048];
 
@@ -63,8 +66,6 @@ fn send_response(mut stream: TcpStream) {
         // TODO send back the rest of the path inside the body with Content-type header
         String::from(format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:{body_length}\r\n\r\n{body}"))
     } else if path_requested == "/user-agent" {
-        // TODO parse headers to find user agent
-        // TODO send user agent in body (same shit as echo)
         let user_agent = iterator
             .find(|header| header.starts_with("User-Agent: "))
             .unwrap_or("")
@@ -72,6 +73,18 @@ fn send_response(mut stream: TcpStream) {
         let user_agent_len = user_agent.len();
 
         String::from(format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:{user_agent_len}\r\n\r\n{user_agent}"))
+    } else if path_requested.starts_with("/files/") {
+        let path = path_requested.trim_start_matches("/files/");
+        root_path = root_path + path;
+        match read_file(root_path) {
+            Ok(body) => {
+                let body_length = body.len();
+                String::from(format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length:{body_length}\r\n\r\n{body}"
+                ))
+            }
+            Err(_) => String::from("HTTP/1.1 404 Not Found\r\n\r\n"),
+        }
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n")
     };
@@ -82,4 +95,11 @@ fn send_response(mut stream: TcpStream) {
     stream
         .write(response.as_ref())
         .expect("Couldn't write to stream");
+}
+
+fn read_file(path: String) -> std::io::Result<String> {
+    let mut file = File::open(path)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    Ok(contents)
 }
