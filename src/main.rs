@@ -50,6 +50,16 @@ fn send_response(mut stream: TcpStream) {
         let body_length = body.len();
         // TODO send back the rest of the path inside the body with Content-type header
         String::from(format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:{body_length}\r\n\r\n{body}"))
+    } else if path_requested == "/user-agent" {
+        // TODO parse headers to find user agent
+        // TODO send user agent in body (same shit as echo)
+        let user_agent = iterator
+            .find(|header| header.starts_with("User-Agent: "))
+            .unwrap_or("")
+            .trim_start_matches("User-Agent: ");
+        let user_agent_len = user_agent.len();
+
+        String::from(format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:{user_agent_len}\r\n\r\n{user_agent}"))
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n")
     };
