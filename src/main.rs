@@ -32,7 +32,7 @@ fn get_root_path() -> String {
         continue;
     }
     // TODO remove expect here and return nicely
-    let root_path = args.next().expect("Root Path not given as parameter");
+    let root_path = args.next().unwrap_or_default();
     root_path
 }
 
