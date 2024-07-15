@@ -42,18 +42,22 @@ fn send_response(mut stream: TcpStream) {
         .expect("Status line must contain a path");
 
     // TODO check if path requested contains echo
-    // TODO if contains echo then get the rest of the path
-    // TODO send back the rest of the path inside the body with Content-type header
-
-    println!("Sending response to stream for {}", path_requested);
-    let status_line = if path_requested.len() <= 1 {
+    let response = if path_requested.len() <= 1 {
         String::from("HTTP/1.1 200 OK\r\n\r\n")
+    } else if path_requested.starts_with("/echo/") {
+        // TODO if contains echo then get the rest of the path
+        let body = path_requested.trim_start_matches("/echo/");
+        let body_length = body.len();
+        // TODO send back the rest of the path inside the body with Content-type header
+        String::from(format!("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length:{body_length}\r\n\r\n{body}"))
     } else {
         String::from("HTTP/1.1 404 Not Found\r\n\r\n")
     };
 
+    println!("Sending response to stream for {}", path_requested);
+
     // TODO remove expect by handling error
     stream
-        .write(status_line.as_ref())
+        .write(response.as_ref())
         .expect("Couldn't write to stream");
 }
