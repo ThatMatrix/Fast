@@ -1,10 +1,13 @@
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
+    process::exit,
     str, thread,
 };
 
 fn main() {
+    let root_path = get_root_path();
+
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
 
     for stream in listener.incoming() {
@@ -20,9 +23,18 @@ fn main() {
     }
 }
 
+fn get_root_path() -> String {
+    let mut args = std::env::args();
+    while args.next().is_some_and(|arg| arg != "--directory") {
+        continue;
+    }
+    // TODO remove expect here and return nicely
+    let root_path = args.next().expect("Root Path not given as parameter");
+    root_path
+}
+
 fn send_response(mut stream: TcpStream) {
     println!("Parsing request");
-    // let mut buffer: Vec<u8> = Vec::new();
     let mut buffer = [0; 2048];
 
     // TODO if incomming connection does not close the stream, could hang forever
