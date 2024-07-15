@@ -5,8 +5,6 @@ use std::{
     str, thread,
 };
 
-use nom::combinator::iterator;
-
 fn main() {
     let root_path = get_root_path();
 
