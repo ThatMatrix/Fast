@@ -1,39 +1,19 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/f1cca29e-acb0-4016-bf42-f1d6f63fe044)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# Fast
 
-This is a starting point for Rust solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+## Description 
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+Fast is a simple web server made in Rust.
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+The project originally started as with the codecrafter Webserver tutorial: ["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+However, it is fairly easy to finish and as such, after a week of non-consecutive work, it became apparent that I should make the project into something bigger and separated to add more functionnalities.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Functionnalities
 
-# Passing the first stage
+- Support of [HTTP/1.1](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol)
 
-The entry point for your HTTP server implementation is in `src/main.rs`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
-
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
-```
-
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
+## Compile & run the server
 
 1. Ensure you have `cargo (1.70)` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
+2. Run `./your_server.sh` to run your program, which is implemented in
    `src/main.rs`. This command compiles your Rust project, so it might be slow
    the first time you run it. Subsequent runs will be fast.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
